@@ -1,15 +1,22 @@
 import osmnx as ox
 import folium
 import webbrowser
+import simple
 
 from centralities import random_walk_betweenness
 
-def retrieve_road_graph(place_name: str, network_type: str):
-    road_graph = ox.graph_from_place(place_name, network_type=network_type, simplify=True)
+
+def retrieve_road_graph(place_name: str, custom_filter: str):
+    road_graph = ox.graph_from_place(place_name, custom_filter=custom_filter, simplify=False)
+
+    road_graph = simple.simplify_graph(road_graph)
+
     return ox.graph_to_gdfs(road_graph, nodes=True, edges=True)
+
 
 def retrieve_graph(gdf_nodes, gdf_edges):
     return ox.graph_from_gdfs(gdf_nodes, gdf_edges)
+
 
 def create_map(nodes, edges):
     folium_map = folium.Map(location=[nodes['y'].mean(), nodes['x'].mean()], zoom_start=15, tiles='cartodbpositron')
@@ -36,9 +43,9 @@ def create_map(nodes, edges):
 
 
 if __name__ == '__main__':
-    place_name = "Podgórze Duchackie, Krakow, Lesser Poland, Poland"
-    network_type = "drive"  # "all_private", "all", "bike", "drive", "drive_service", "walk"
-    nodes, edges = retrieve_road_graph(place_name, network_type)
+    place_name = "Grzegórzki, Krakow, Lesser Poland, Poland"
+    custom_filter = '["highway"~"motorway|trunk|primary|secondary|tertiary|road|residential|motorway_link|trunk_link|primary_link|secondary_link|tertiary|link|living_street|unclassified|service"]["access"!="no"]'
+    nodes, edges = retrieve_road_graph(place_name, custom_filter)
     roads_graph = retrieve_graph(nodes, edges)
 
     rwb = random_walk_betweenness(roads_graph)
