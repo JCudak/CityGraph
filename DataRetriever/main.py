@@ -3,7 +3,7 @@ import networkx as nx
 import folium
 import webbrowser
 import simple
-from centralities import random_walk_betweenness, centrality_betweenness, page_rank
+from centralities import random_walk_betweenness, centrality_betweenness, page_rank, local_clustering_coefficient
 
 
 def retrieve_road_graph(place_name: str, custom_filter: str):
@@ -49,13 +49,16 @@ if __name__ == '__main__':
     roads_graph = retrieve_graph(nodes, edges)
 
     rwb = random_walk_betweenness(roads_graph)
-    print("random walk betweenness: \n", rwb)
+    print("random walk betweenness: ", rwb[0])
 
     cb = centrality_betweenness(roads_graph)
-    print("centrality betweenness: \n", cb)
+    print("centrality betweenness: ", cb[0])
 
     pgb = page_rank(roads_graph)
-    print("page rank: \n", pgb)
+    print("page rank: ", pgb[0])
+
+    lcc = local_clustering_coefficient(roads_graph)
+    print("local clustering coefficient: \n", lcc)
 
     create_map(nodes, edges)
     webbrowser.open('map.html')
