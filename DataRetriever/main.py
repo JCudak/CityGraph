@@ -56,10 +56,15 @@ def create_map(nodes, edges, node_colors=None):
 
 
 if __name__ == '__main__':
-    place_name = "Podgórze Duchackie, Krakow, Lesser Poland, Poland"
+    place_name = "Krowodrza, Krakow, Lesser Poland, Poland"
     network_type = "drive"  # "all_private", "all", "bike", "drive", "drive_service", "walk"
     nodes, edges = retrieve_road_graph(place_name, network_type)
     roads_graph = retrieve_graph(nodes, edges)
+
+    #node1 = 2956194884
+    #edge_weight = roads_graph.edges[(node1, node1, 0)]['osmid']
+    #print(edge_weight)
+
     rwb = random_walk_betweenness(roads_graph)
     node_colors = color_nodes(rwb)
 
