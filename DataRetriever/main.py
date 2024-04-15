@@ -1,19 +1,26 @@
 import matplotlib.colors as mcolors
 import matplotlib.cm as cm
 import osmnx as ox
+import networkx as nx
 import folium
 import webbrowser
+import simple
+from centralities import random_walk_betweenness, centrality_betweenness, page_rank, local_clustering_coefficient
 
-from centralities import random_walk_betweenness
 
-def retrieve_road_graph(place_name: str, network_type: str):
-    road_graph = ox.graph_from_place(place_name, network_type=network_type, simplify=True)
+def retrieve_road_graph(place_name: str, custom_filter: str):
+    road_graph = ox.graph_from_place(place_name, custom_filter=custom_filter, simplify=False)
+
+    road_graph = simple.simplify_graph(road_graph)
+
     return ox.graph_to_gdfs(road_graph, nodes=True, edges=True)
+
 
 def retrieve_graph(gdf_nodes, gdf_edges):
     return ox.graph_from_gdfs(gdf_nodes, gdf_edges)
 
 def color_nodes(c_measures):
+    c_measures = dict(c_measures)
     colors = [(0, 1, 0), (1, 1, 0), (1, 0, 0)] #GREEN, YELLOW, RED 
     cmap = mcolors.LinearSegmentedColormap.from_list('custom', colors)
 
@@ -56,9 +63,9 @@ def create_map(nodes, edges, node_colors=None):
 
 
 if __name__ == '__main__':
-    place_name = "Krowodrza, Krakow, Lesser Poland, Poland"
-    network_type = "drive"  # "all_private", "all", "bike", "drive", "drive_service", "walk"
-    nodes, edges = retrieve_road_graph(place_name, network_type)
+    place_name = "Krakow, Lesser Poland, Poland"
+    custom_filter = '["highway"~"motorway|trunk|primary|secondary|tertiary|road|residential|motorway_link|trunk_link|primary_link|secondary_link|tertiary|link|living_street|unclassified|service"]["access"!="no"]'
+    nodes, edges = retrieve_road_graph(place_name, custom_filter)
     roads_graph = retrieve_graph(nodes, edges)
 
     #node1 = 2956194884
@@ -66,8 +73,19 @@ if __name__ == '__main__':
     #print(edge_weight)
 
     rwb = random_walk_betweenness(roads_graph)
-    node_colors = color_nodes(rwb)
+
+    cb = centrality_betweenness(roads_graph)
+    print("centrality betweenness: ", cb[0])
+
+    pgb = page_rank(roads_graph)
+    print("page rank: ", pgb[0])
+
+    lcc = local_clustering_coefficient(roads_graph)
+    print("local clustering coefficient: \n", lcc)
+
+    node_colors = color_nodes(cb)
 
     #create_map(nodes, edges)
     create_map(nodes, edges, node_colors)
     webbrowser.open('map.html')
+
