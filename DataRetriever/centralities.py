@@ -19,4 +19,3 @@ def page_rank(roads_graph):
 def local_clustering_coefficient(roads_graph):
     G2 = nx.DiGraph(roads_graph)
     return nx.clustering(G=G2.to_undirected())
-

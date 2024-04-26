@@ -6,6 +6,7 @@ import folium
 import webbrowser
 import simple
 from centralities import random_walk_betweenness, centrality_betweenness, page_rank, local_clustering_coefficient
+from gui import gui
 
 
 def retrieve_road_graph(place_name: str, custom_filter: str):
@@ -62,27 +63,23 @@ def create_map(nodes, edges, node_colors=None):
     folium_map.save('map.html')
 
 
+
+
+
 if __name__ == '__main__':
     place_name = "Krakow, Lesser Poland, Poland"
-    custom_filter = '["highway"~"motorway|trunk|primary|secondary|tertiary|road|residential|motorway_link|trunk_link|primary_link|secondary_link|tertiary|link|living_street|unclassified|service"]["access"!="no"]'
+    custom_filter = ('["highway"~"motorway|trunk|primary|secondary|tertiary|road|residential|motorway_link|trunk_link|'
+                     'primary_link|secondary_link|tertiary|link|living_street|unclassified|service"]["access"!="no"]')
     nodes, edges = retrieve_road_graph(place_name, custom_filter)
     roads_graph = retrieve_graph(nodes, edges)
+
+    gui(roads_graph)
 
     #node1 = 2956194884
     #edge_weight = roads_graph.edges[(node1, node1, 0)]['osmid']
     #print(edge_weight)
 
-    rwb = random_walk_betweenness(roads_graph)
-
     cb = centrality_betweenness(roads_graph)
-    print("centrality betweenness: ", cb[0])
-
-    pgb = page_rank(roads_graph)
-    print("page rank: ", pgb[0])
-
-    lcc = local_clustering_coefficient(roads_graph)
-    print("local clustering coefficient: \n", lcc)
-
     node_colors = color_nodes(cb)
 
     #create_map(nodes, edges)
