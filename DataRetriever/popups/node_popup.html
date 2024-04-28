@@ -1,0 +1,14 @@
+<div class="container">
+    <p>Node ID: {{node_id}}</p>
+    <button class="button" onclick="var copyText = document.createElement('textarea');
+                             copyText.value = '{{node_id}}';
+                             document.body.appendChild(copyText);
+                             copyText.select();
+                             document.execCommand('copy');
+                             document.body.removeChild(copyText);
+                             var message = document.getElementById('copy-message-{node_id}');
+                             message.style.display = 'block';">
+        Copy ID
+    </button>
+    <p id='copy-message-{node_id}' class="message">Copied successfully!</p>
+</div>
