@@ -1,7 +1,9 @@
+import webbrowser
 
 from DataRetriever.centralities import random_walk_betweenness, centrality_betweenness, page_rank, \
     local_clustering_coefficient
-from DataRetriever.enums import Centrality, UserOption
+from DataRetriever.utils import color_nodes, create_map, retrieve_graph
+from enums import Centrality, UserOption
 
 
 def get_number():
@@ -40,8 +42,8 @@ def centralities(roads_graph):
             break
 
 
-def gui(roads_graph):
-
+def gui(nodes, edges):
+    roads_graph = retrieve_graph(nodes, edges)
     while True:
         print("Choose an option:\n"
               "1 - display graph\n"
@@ -55,7 +57,10 @@ def gui(roads_graph):
         number = get_number()
 
         if number == UserOption.display_graph.value:
-            ...
+            cb = centrality_betweenness(roads_graph)
+            node_colors = color_nodes(cb)
+            create_map(nodes, edges, node_colors)
+            webbrowser.open('map.html')
         elif number == UserOption.add_edge.value:
             print("Enter edge number: ")
             value = get_number()
