@@ -3,6 +3,8 @@ import matplotlib.cm as cm
 import osmnx as ox
 from folium import IFrame, PolyLine, CircleMarker, Popup, Tooltip, Map
 import simple
+from shapely.geometry import LineString, Point
+import math
 
 
 def retrieve_road_graph(place_name: str, custom_filter: str):
@@ -10,11 +12,7 @@ def retrieve_road_graph(place_name: str, custom_filter: str):
 
     road_graph = simple.simplify_graph(road_graph)
 
-    return ox.graph_to_gdfs(road_graph, nodes=True, edges=True)
-
-
-def retrieve_graph(gdf_nodes, gdf_edges):
-    return ox.graph_from_gdfs(gdf_nodes, gdf_edges)
+    return road_graph
 
 
 def color_nodes(c_measures):
@@ -29,18 +27,13 @@ def color_nodes(c_measures):
     node_colors = {node_id: mcolors.to_hex(cmap_scaled.to_rgba(betweenness_value))
                    for node_id, betweenness_value in c_measures.items()}
 
-    # sns.heatmap(np.random.rand(5, 5), cmap=cmap)
-    # plt.xlabel('X-axis')
-    # plt.ylabel('Y-axis')
-    # plt.show()
-
     return node_colors
 
 
-def create_map(nodes, edges, node_colors=None):
+def create_map(road_graph, node_colors=None):
+    nodes, edges = ox.graph_to_gdfs(road_graph, nodes=True, edges=True)
     folium_map = Map(location=[nodes['y'].mean(), nodes['x'].mean()], zoom_start=15, tiles='cartodbpositron')
 
-    # Load CSS and HTML templates, and JavaScript
     with open('popups/popup_style.css', 'r') as f:
         css = f.read()
     with open('popups/node_popup.html', 'r') as f:
