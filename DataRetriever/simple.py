@@ -63,18 +63,18 @@ def _remove_rings(G):
     return G
 
 
-def simplify_graph(G):
+def simplify_graph(graph, remove_self_loops=True):
     attrs_to_sum = {"length", "travel_time"}
 
-    G = G.copy()
+    graph = graph.copy()
     all_nodes_to_remove = []
     all_edges_to_add = []
 
-    for path in _get_paths_to_simplify(G):
+    for path in _get_paths_to_simplify(graph):
         path_attributes = {}
         for u, v in zip(path[:-1], path[1:]):
 
-            edge_data = list(G.get_edge_data(u, v).values())[0]
+            edge_data = list(graph.get_edge_data(u, v).values())[0]
             for attr in edge_data:
                 if attr in path_attributes:
                     path_attributes[attr].append(edge_data[attr])
@@ -90,7 +90,7 @@ def simplify_graph(G):
                 path_attributes[attr] = list(set(path_attributes[attr]))
 
         path_attributes["geometry"] = LineString(
-            [Point((G.nodes[node]["x"], G.nodes[node]["y"])) for node in path]
+            [Point((graph.nodes[node]["x"], graph.nodes[node]["y"])) for node in path]
         )
 
         all_nodes_to_remove.extend(path[1:-1])
@@ -99,10 +99,14 @@ def simplify_graph(G):
         )
 
     for edge in all_edges_to_add:
-        G.add_edge(edge["origin"], edge["destination"], **edge["attr_dict"])
+        graph.add_edge(edge["origin"], edge["destination"], **edge["attr_dict"])
 
-    G.remove_nodes_from(set(all_nodes_to_remove))
+    graph.remove_nodes_from(set(all_nodes_to_remove))
 
-    G = _remove_rings(G)
+    graph = _remove_rings(graph)
 
-    return G
+    if remove_self_loops:
+        self_loops = list(nx.selfloop_edges(graph))
+        graph.remove_edges_from(self_loops)
+
+    return graph
