@@ -9,7 +9,6 @@ import math
 
 def retrieve_road_graph(place_name: str, custom_filter: str):
     road_graph = ox.graph_from_place(place_name, custom_filter=custom_filter, simplify=False)
-
     road_graph = simple.simplify_graph(road_graph)
 
     return road_graph
@@ -17,11 +16,16 @@ def retrieve_road_graph(place_name: str, custom_filter: str):
 
 def color_nodes(c_measures):
     c_measures = dict(c_measures)
+    c_measures = {node_id: math.log(betweenness_value + 1)  # 1 to avoid log(0)
+                      for node_id, betweenness_value in c_measures.items()}
+
     colors = [(0, 1, 0), (1, 1, 0), (1, 0, 0)]  # GREEN, YELLOW, RED
     cmap = mcolors.LinearSegmentedColormap.from_list('custom', colors)
 
+    min_betweenness = min(c_measures.values())
     max_betweenness = max(c_measures.values())
-    norm = mcolors.Normalize(vmin=0, vmax=max_betweenness)
+
+    norm = mcolors.Normalize(vmin=min_betweenness, vmax=max_betweenness)
     cmap_scaled = cm.ScalarMappable(norm=norm, cmap=cmap)
 
     node_colors = {node_id: mcolors.to_hex(cmap_scaled.to_rgba(betweenness_value))
