@@ -1,7 +1,7 @@
 import matplotlib.colors as mcolors
 import matplotlib.cm as cm
 import osmnx as ox
-import folium
+from folium import IFrame, PolyLine, CircleMarker, Popup, Tooltip, Map
 import simple
 
 
@@ -38,36 +38,45 @@ def color_nodes(c_measures):
 
 
 def create_map(nodes, edges, node_colors=None):
-    folium_map = folium.Map(location=[nodes['y'].mean(), nodes['x'].mean()], zoom_start=15, tiles='cartodbpositron')
+    folium_map = Map(location=[nodes['y'].mean(), nodes['x'].mean()], zoom_start=15, tiles='cartodbpositron')
 
-    for _, row in edges.iterrows():
+    # Load CSS and HTML templates, and JavaScript
+    with open('popups/popup_style.css', 'r') as f:
+        css = f.read()
+    with open('popups/node_popup.html', 'r') as f:
+        html_template = f.read()
+    with open('popups/copy_to_clipboard.js', 'r') as f:
+        js = f.read()
+
+    def create_popup(item_id, item_type, height=100):
+        popup_content = html_template.replace('{{item_info}}', f"{item_id}")
+        popup_content = popup_content.replace('{{info_name}}', f"{item_type} ID")
+        iframe_html = f"<style>{css}</style><script>{js}</script>{popup_content}"
+        return Popup(IFrame(html=iframe_html, width=180, height=height), parse_html=True)
+
+    # Add edges to the map
+    for edge_id, row in edges.iterrows():
         points = [(y, x) for x, y in zip(row['geometry'].xy[0], row['geometry'].xy[1])]
-        folium.PolyLine(
+        PolyLine(
             locations=points,
             color='blue',
             weight=2,
             arrow_length=4,
-            arrow_head=2
+            arrow_head=2,
+            tooltip=Tooltip(f'Edge ID: {edge_id}'),
+            popup=create_popup(edge_id, 'Edge', 120)
         ).add_to(folium_map)
 
+    # Add nodes to the map
     for node_id, row in nodes.iterrows():
-        with open('popups/popup_style.css', 'r') as f:
-            css = f.read()
-        with open('popups/node_popup.html', 'r') as f:
-            html_template = f.read()
-
-        html_content = html_template.replace('{{node_id}}', str(node_id))
-        iframe_html = f"<style>{css}</style>{html_content}"
-
-        iframe = folium.IFrame(html=iframe_html, width=180, height=100)
-
-        folium.CircleMarker(
+        color = 'red' if node_colors is None else node_colors[node_id]
+        CircleMarker(
             location=(row['y'], row['x']),
             radius=2,
-            color='red' if node_colors is None else node_colors[node_id],
+            color=color,
             fill=True,
-            tooltip=folium.Tooltip(f'Node ID: {node_id}'),
-            popup=folium.Popup(iframe, parse_html=True)
+            tooltip=Tooltip(f'Node ID: {node_id}'),
+            popup=create_popup(node_id, 'Node')
         ).add_to(folium_map)
 
     folium_map.save('map.html')
