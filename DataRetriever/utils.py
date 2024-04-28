@@ -1,6 +1,5 @@
 import matplotlib.colors as mcolors
 import matplotlib.cm as cm
-import networkx as nx
 import osmnx as ox
 import folium
 import simple
@@ -52,11 +51,23 @@ def create_map(nodes, edges, node_colors=None):
         ).add_to(folium_map)
 
     for node_id, row in nodes.iterrows():
+        with open('popups/popup_style.css', 'r') as f:
+            css = f.read()
+        with open('popups/node_popup.html', 'r') as f:
+            html_template = f.read()
+
+        html_content = html_template.replace('{{node_id}}', str(node_id))
+        iframe_html = f"<style>{css}</style>{html_content}"
+
+        iframe = folium.IFrame(html=iframe_html, width=180, height=100)
+
         folium.CircleMarker(
             location=(row['y'], row['x']),
             radius=2,
             color='red' if node_colors is None else node_colors[node_id],
-            fill=True
+            fill=True,
+            tooltip=folium.Tooltip(f'Node ID: {node_id}'),
+            popup=folium.Popup(iframe, parse_html=True)
         ).add_to(folium_map)
 
     folium_map.save('map.html')
