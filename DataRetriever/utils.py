@@ -96,19 +96,19 @@ def create_map(road_graph, node_colors=None, edge_colors=None):
 
 def assign_road_weights(road_graph):
     road_type_weights = {
-        'motorway': 5,
-        'motorway_link': 5,
-        'trunk': 4,
-        'trunk_link': 4,
-        'primary': 3,
-        'primary_link': 3,
-        'secondary': 2,
-        'secondary_link': 2,
-        'tertiary': 1,
-        'tertiary_link': 1,
-        'residential': 0.5,
-        'service': 0.3,
-        'track': 0.3
+        'motorway': 0.1,
+        'motorway_link': 0.1,
+        'trunk': 0.3,
+        'trunk_link': 0.3,
+        'primary': 0.5,
+        'primary_link': 0.5,
+        'secondary': 0.6,
+        'secondary_link': 0.6,
+        'tertiary': 0.7,
+        'tertiary_link': 0.7,
+        'residential': 0.8,
+        'service': 0.8,
+        'track': 0.8
     }
 
     for u, v, data in road_graph.edges(keys=False, data=True):
@@ -117,5 +117,5 @@ def assign_road_weights(road_graph):
             first_highway = road_type[0]
         else:
             first_highway = road_type
-        data['weight'] = road_type_weights.get(first_highway, 0.1)
+        data['weight'] = road_type_weights.get(first_highway, 0.9)
     return road_graph
