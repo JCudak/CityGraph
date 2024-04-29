@@ -3,21 +3,20 @@ import matplotlib.cm as cm
 import osmnx as ox
 from folium import IFrame, PolyLine, CircleMarker, Popup, Tooltip, Map
 import simple
-from shapely.geometry import LineString, Point
 import math
 
 
 def retrieve_road_graph(place_name: str, custom_filter: str):
     road_graph = ox.graph_from_place(place_name, custom_filter=custom_filter, simplify=False)
     road_graph = simple.simplify_graph(road_graph)
-
+    road_graph = assign_road_weights(road_graph)
     return road_graph
 
 
 def color_nodes(c_measures):
     c_measures = dict(c_measures)
     c_measures = {node_id: math.log(betweenness_value + 1)  # 1 to avoid log(0)
-                      for node_id, betweenness_value in c_measures.items()}
+                  for node_id, betweenness_value in c_measures.items()}
 
     colors = [(0, 1, 0), (1, 1, 0), (1, 0, 0)]  # GREEN, YELLOW, RED
     cmap = mcolors.LinearSegmentedColormap.from_list('custom', colors)
@@ -46,8 +45,6 @@ def color_edges(total_e, added_e, deleted_e):
             colored_edges[edge] = 'blue'
     return colored_edges
 
-#def save_map(road_graph, file_path):
-#    ox.save_graphml(road_graph, file_path) 
 
 def create_map(road_graph, node_colors=None, edge_colors=None):
     nodes, edges = ox.graph_to_gdfs(road_graph, nodes=True, edges=True)
@@ -92,3 +89,26 @@ def create_map(road_graph, node_colors=None, edge_colors=None):
         ).add_to(folium_map)
 
     folium_map.save('map.html') if edge_colors is None else folium_map.save('diff_map.html')
+
+
+def assign_road_weights(road_graph):
+    road_type_weights = {
+        'motorway': 5,
+        'motorway_link': 5,
+        'trunk': 4,
+        'trunk_link': 4,
+        'primary': 3,
+        'primary_link': 3,
+        'secondary': 2,
+        'secondary_link': 2,
+        'tertiary': 1,
+        'tertiary_link': 1,
+        'residential': 0.5,
+        'service': 0.3,
+        'track': 0.3
+    }
+
+    for u, v, data in road_graph.edges(keys=False, data=True):
+        road_type = data.get('highway')[0]
+        data['weight'] = road_type_weights.get(road_type, 0.1)
+    return road_graph

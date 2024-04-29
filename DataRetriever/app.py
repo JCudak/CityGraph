@@ -12,6 +12,7 @@ old_graph = retrieve_road_graph(initial_place, filter_string)
 road_graph = retrieve_road_graph(initial_place, filter_string)
 road_graph_sum = retrieve_road_graph(initial_place, filter_string)
 
+
 centralities = {
     'Random Walk Betweenness': random_walk_betweenness(road_graph),
     'Centrality Betweenness': centrality_betweenness(road_graph),
