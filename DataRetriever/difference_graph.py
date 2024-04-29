@@ -1,12 +1,13 @@
 from utils import color_nodes, create_map
 from centralities import random_walk_betweenness
-from centralities import centrality_betweenness 
+from centralities import centrality_betweenness
 from centralities import page_rank
 from centralities import local_clustering_coefficient
 
+
 def _compute_centralities(type, old_graph, new_graph):
     old_graph_measure = [tuple()]
-    new_graph_measure = [tuple()] 
+    new_graph_measure = [tuple()]
 
     match type:
         case 'Random Walk Betweenness':
@@ -29,8 +30,9 @@ def _compute_centralities(type, old_graph, new_graph):
 
     return old_graph_measure, new_graph_measure
 
+
 def _compute_difference(old_measure, new_measure):
-    old_measure = dict(old_measure) 
+    old_measure = dict(old_measure)
     new_measure = dict(new_measure)
 
     diff_measure = {}
@@ -39,6 +41,7 @@ def _compute_difference(old_measure, new_measure):
         diff_measure[id] = new_measure[id] - old_measure[id]
 
     return list(diff_measure.items())
+
 
 def _retrieve_deleted_edges(old_graph, new_graph):
     old_edges = {edge: old_graph[edge[0]][edge[1]] for edge in old_graph.edges}
@@ -51,6 +54,7 @@ def _retrieve_deleted_edges(old_graph, new_graph):
             deleted_edges[edge] = data
 
     return deleted_edges
+
 
 def _retrieve_added_edges(old_graph, new_graph):
     old_edges = {edge: old_graph[edge[0]][edge[1]] for edge in old_graph.edges}
@@ -66,23 +70,9 @@ def _retrieve_added_edges(old_graph, new_graph):
 
 
 def retrieve_difference_graph(old_graph, new_graph, measure_method):
-    old_measure, new_measure =  _compute_centralities(measure_method, old_graph, new_graph)
+    old_measure, new_measure = _compute_centralities(measure_method, old_graph, new_graph)
     diff_measure = _compute_difference(old_measure, new_measure)
     deleted_edges = _retrieve_deleted_edges(old_graph, new_graph)
     added_edges = _retrieve_added_edges(old_graph, new_graph)
 
     return diff_measure, deleted_edges, added_edges
-
-                        
-
-
-    
-    
-
-    
-    
-
-
-
-
-
