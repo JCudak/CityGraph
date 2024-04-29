@@ -34,7 +34,19 @@ def color_nodes(c_measures):
     return node_colors
 
 
-def create_map(road_graph, node_colors=None):
+def color_edges(total_e, added_e, deleted_e):
+    colored_edges = {}
+
+    for edge in total_e:
+        if edge in added_e:
+            colored_edges[edge] = 'green'
+        elif edge in deleted_e:
+            colored_edges[edge] = 'red'
+        else:
+            colored_edges[edge] = 'blue'
+    return colored_edges
+
+def create_map(road_graph, node_colors=None, edge_colors=None):
     nodes, edges = ox.graph_to_gdfs(road_graph, nodes=True, edges=True)
     folium_map = Map(location=[nodes['y'].mean(), nodes['x'].mean()], zoom_start=15, tiles='cartodbpositron')
 
@@ -56,7 +68,7 @@ def create_map(road_graph, node_colors=None):
         points = [(y, x) for x, y in zip(row['geometry'].xy[0], row['geometry'].xy[1])]
         PolyLine(
             locations=points,
-            color='blue',
+            color='blue' if edge_colors is None else edge_colors[edge_id],
             weight=2,
             arrow_length=4,
             arrow_head=2,
@@ -76,4 +88,4 @@ def create_map(road_graph, node_colors=None):
             popup=create_popup(node_id, 'Node')
         ).add_to(folium_map)
 
-    folium_map.save('map.html')
+    folium_map.save('map.html') if edge_colors is None else folium_map.save('diff_map.html')

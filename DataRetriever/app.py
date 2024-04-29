@@ -1,7 +1,7 @@
 import webbrowser
 from centralities import random_walk_betweenness, centrality_betweenness, page_rank, local_clustering_coefficient
-from utils import color_nodes, create_map, retrieve_road_graph
-from operations import retrieve_difference
+from utils import color_nodes, color_edges, create_map, retrieve_road_graph
+from operations import retrieve_difference_graph
 from copy import copy
 
 initial_place = "Kurdwanów, Podgórze, Krakow, Lesser Poland, Poland"
@@ -86,11 +86,14 @@ def display_graph(road_graph):
 def read_graph_data(custom_filter):
     place_name = input("Enter place name: ")
     new_road_graph = retrieve_road_graph(place_name, custom_filter)
+    new_road_graph_n = retrieve_road_graph(place_name, custom_filter)
+    new_road_graph_s = retrieve_road_graph(place_name, custom_filter)
+
     if new_road_graph:
         global road_graph, road_graph_new, road_graph_sum
         road_graph = new_road_graph
-        road_graph_new = road_graph
-        road_graph_sum = road_graph
+        road_graph_new = new_road_graph_n 
+        road_graph_sum = new_road_graph_s 
         global centralities
         centralities = {
             'Random Walk Betweenness': random_walk_betweenness(road_graph_new),
@@ -100,8 +103,14 @@ def read_graph_data(custom_filter):
         }
         print("Graph data has been updated and centralities recalculated.")
 
-def generate_difference(old_graph, new_graph, sum_graph, method):
-    retrieve_difference(old_graph, new_graph, sum_graph, current_centrality)
+def generate_difference(old_graph, new_graph, method):
+    diff_measures, deleted_edges, added_edges = retrieve_difference_graph(old_graph, new_graph, current_centrality)
+    node_colors = color_nodes(diff_measures)
+    edge_colors = color_edges(road_graph_sum.edges, added_edges, deleted_edges)
+    create_map(road_graph_sum, node_colors, edge_colors)
+    webbrowser.open('diff_map.html')
+    print('Difference graph has been generated')
+    
 
 def gui():
     options = {
@@ -110,7 +119,7 @@ def gui():
         3: lambda: delete_edge(road_graph_new),
         4: handle_centrality_method_switch,
         5: lambda: read_graph_data(filter_string),
-        7: lambda: generate_difference(road_graph, road_graph_new, road_graph_sum, current_centrality)
+        7: lambda: generate_difference(road_graph, road_graph_new, current_centrality)
     }
 
     while True:
