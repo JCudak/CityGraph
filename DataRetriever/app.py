@@ -1,11 +1,16 @@
 import webbrowser
-from DataRetriever.centralities import random_walk_betweenness, centrality_betweenness, page_rank, local_clustering_coefficient
-from DataRetriever.utils import color_nodes, create_map, retrieve_road_graph
+from centralities import random_walk_betweenness, centrality_betweenness, page_rank, local_clustering_coefficient
+from utils import color_nodes, color_edges, create_map, retrieve_road_graph
+from difference_graph import retrieve_difference_graph
+from copy import deepcopy
 
 initial_place = "Kurdwanów, Podgórze, Krakow, Lesser Poland, Poland"
 filter_string = ('["highway"~"motorway|trunk|primary|secondary|tertiary|road|residential|motorway_link|trunk_link|'
                  'primary_link|secondary_link|tertiary|link|living_street|unclassified|service"]["access"!="no"]')
+
+old_graph = retrieve_road_graph(initial_place, filter_string)
 road_graph = retrieve_road_graph(initial_place, filter_string)
+road_graph_sum = retrieve_road_graph(initial_place, filter_string)
 
 centralities = {
     'Random Walk Betweenness': random_walk_betweenness(road_graph),
@@ -59,6 +64,7 @@ def add_edge(road_graph):
     if edge_id:
         weight = float(input("Enter weight for the edge: "))
         road_graph.add_edge(*edge_id, weight=weight)
+        road_graph_sum.add_edge(*edge_id, weight=weight)
         print(f"Edge {edge_id} added with weight {weight}.")
 
 
@@ -80,9 +86,12 @@ def display_graph(road_graph):
 def read_graph_data(custom_filter):
     place_name = input("Enter place name: ")
     new_road_graph = retrieve_road_graph(place_name, custom_filter)
+
     if new_road_graph:
-        global road_graph
+        global old_graph, road_graph, road_graph_sum
+        old_graph = deepcopy(road_graph)
         road_graph = new_road_graph
+        road_graph_sum = deepcopy(new_road_graph)
         global centralities
         centralities = {
             'Random Walk Betweenness': random_walk_betweenness(road_graph),
@@ -93,13 +102,23 @@ def read_graph_data(custom_filter):
         print("Graph data has been updated and centralities recalculated.")
 
 
+def generate_difference(old_graph, curr_graph, method):
+    diff_measures, deleted_edges, added_edges = retrieve_difference_graph(old_graph, curr_graph, current_centrality)
+    node_colors = color_nodes(diff_measures)
+    edge_colors = color_edges(road_graph_sum.edges, added_edges, deleted_edges)
+    create_map(road_graph_sum, node_colors, edge_colors)
+    webbrowser.open('diff_map.html')
+    print('Difference graph has been generated')
+
+
 def gui():
     options = {
         1: lambda: display_graph(road_graph),
         2: lambda: add_edge(road_graph),
         3: lambda: delete_edge(road_graph),
         4: handle_centrality_method_switch,
-        5: lambda: read_graph_data(filter_string)
+        5: lambda: read_graph_data(filter_string),
+        7: lambda: generate_difference(old_graph, road_graph, current_centrality)
     }
 
     while True:
