@@ -52,7 +52,7 @@ def create_map(road_graph, node_colors=None, edge_colors=None):
 
     with open('popups/popup_style.css', 'r') as f:
         css = f.read()
-    with open('popups/node_popup.html', 'r') as f:
+    with open('popups/popup.html', 'r') as f:
         html_template = f.read()
     with open('popups/copy_to_clipboard.js', 'r') as f:
         js = f.read()
@@ -60,11 +60,13 @@ def create_map(road_graph, node_colors=None, edge_colors=None):
     def create_popup(item_id, item_type, height=100):
         popup_content = html_template.replace('{{item_info}}', f"{item_id}")
         popup_content = popup_content.replace('{{info_name}}', f"{item_type} ID")
+
         iframe_html = f"<style>{css}</style><script>{js}</script>{popup_content}"
         return Popup(IFrame(html=iframe_html, width=180, height=height), parse_html=True)
 
     # Add edges to the map
     for edge_id, row in edges.iterrows():
+        road_type = row['highway']
         points = [(y, x) for x, y in zip(row['geometry'].xy[0], row['geometry'].xy[1])]
         PolyLine(
             locations=points,
@@ -72,8 +74,9 @@ def create_map(road_graph, node_colors=None, edge_colors=None):
             weight=2,
             arrow_length=4,
             arrow_head=2,
-            tooltip=Tooltip(f'Edge ID: {edge_id}'),
-            popup=create_popup(edge_id, 'Edge', 120)
+            road_type=road_type,
+            tooltip=Tooltip(f'Edge ID: {edge_id}, Road type: {road_type}'),
+            popup=create_popup(edge_id, 'Edge', height=120)
         ).add_to(folium_map)
 
     # Add nodes to the map
@@ -85,7 +88,7 @@ def create_map(road_graph, node_colors=None, edge_colors=None):
             color=color,
             fill=True,
             tooltip=Tooltip(f'Node ID: {node_id}'),
-            popup=create_popup(node_id, 'Node')
+            popup=create_popup(node_id, 'Node', road_graph)
         ).add_to(folium_map)
 
     folium_map.save('map.html') if edge_colors is None else folium_map.save('diff_map.html')
@@ -109,6 +112,10 @@ def assign_road_weights(road_graph):
     }
 
     for u, v, data in road_graph.edges(keys=False, data=True):
-        road_type = data.get('highway')[0]
-        data['weight'] = road_type_weights.get(road_type, 0.1)
+        road_type = data.get('highway')
+        if isinstance(road_type, list):
+            first_highway = road_type[0]
+        else:
+            first_highway = road_type
+        data['weight'] = road_type_weights.get(first_highway, 0.1)
     return road_graph
