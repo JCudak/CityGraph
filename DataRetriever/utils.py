@@ -46,6 +46,9 @@ def color_edges(total_e, added_e, deleted_e):
             colored_edges[edge] = 'blue'
     return colored_edges
 
+#def save_map(road_graph, file_path):
+#    ox.save_graphml(road_graph, file_path) 
+
 def create_map(road_graph, node_colors=None, edge_colors=None):
     nodes, edges = ox.graph_to_gdfs(road_graph, nodes=True, edges=True)
     folium_map = Map(location=[nodes['y'].mean(), nodes['x'].mean()], zoom_start=15, tiles='cartodbpositron')
