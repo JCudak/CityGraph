@@ -1,7 +1,7 @@
 import webbrowser
 from centralities import random_walk_betweenness, centrality_betweenness, page_rank, local_clustering_coefficient
 from utils import color_nodes, color_edges, create_map, retrieve_road_graph
-from operations import retrieve_difference_graph
+from difference_graph import retrieve_difference_graph
 from copy import copy
 
 initial_place = "Kurdwanów, Podgórze, Krakow, Lesser Poland, Poland"
