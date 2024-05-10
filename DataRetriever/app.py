@@ -87,7 +87,7 @@ def display_graph(road_graph):
     global old_graph_centralities
     computed_centralities = centralities[current_centrality]
 
-    if old_graph_centralities == () or old_graph_centralities[0] != current_centrality: 
+    if old_graph_centralities == (): 
         old_graph_centralities = (current_centrality, computed_centralities)
 
     node_colors = color_nodes(centralities[current_centrality])
