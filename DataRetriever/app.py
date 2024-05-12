@@ -9,9 +9,12 @@ filter_string = ('["highway"~"motorway|trunk|primary|secondary|tertiary|road|res
                  'primary_link|secondary_link|tertiary|link|living_street|unclassified|service"]["access"!="no"]')
 
 old_graph = retrieve_road_graph(initial_place, filter_string)
-road_graph = retrieve_road_graph(initial_place, filter_string)
-road_graph_sum = retrieve_road_graph(initial_place, filter_string)
+road_graph = deepcopy(old_graph) 
+road_graph_sum = deepcopy(old_graph)
 
+added_edges = []
+deleted_edges = []
+old_graph_centralities = ()
 
 centralities = {
     'Random Walk Betweenness': random_walk_betweenness(road_graph),
@@ -66,6 +69,7 @@ def add_edge(road_graph):
         weight = float(input("Enter weight for the edge: "))
         road_graph.add_edge(*edge_id, weight=weight)
         road_graph_sum.add_edge(*edge_id, weight=weight)
+        added_edges.append(edge_id)
         print(f"Edge {edge_id} added with weight {weight}.")
 
 
@@ -73,12 +77,19 @@ def delete_edge(road_graph):
     edge_id = parse_edge_id_input()
     if edge_id and road_graph.has_edge(*edge_id):
         road_graph.remove_edge(*edge_id)
+        deleted_edges.append(edge_id)
         print(f"Edge {edge_id} removed.")
     else:
         print("Edge does not exist.")
 
 
 def display_graph(road_graph):
+    global old_graph_centralities
+    computed_centralities = centralities[current_centrality]
+
+    if old_graph_centralities == (): 
+        old_graph_centralities = (current_centrality, computed_centralities)
+
     node_colors = color_nodes(centralities[current_centrality])
     create_map(road_graph, node_colors)
     webbrowser.open('map.html')
@@ -89,10 +100,14 @@ def read_graph_data(custom_filter):
     new_road_graph = retrieve_road_graph(place_name, custom_filter)
 
     if new_road_graph:
-        global old_graph, road_graph, road_graph_sum
+        global old_graph, road_graph, road_graph_sum, added_edges, deleted_edges, old_graph_centralities
         old_graph = deepcopy(road_graph)
         road_graph = new_road_graph
         road_graph_sum = deepcopy(new_road_graph)
+        added_edges = []
+        deleted_edges = []
+        old_graph_centralities = ()
+
         global centralities
         centralities = {
             'Random Walk Betweenness': random_walk_betweenness(road_graph),
@@ -103,13 +118,14 @@ def read_graph_data(custom_filter):
         print("Graph data has been updated and centralities recalculated.")
 
 
-def generate_difference(old_graph, curr_graph, method):
-    diff_measures, deleted_edges, added_edges = retrieve_difference_graph(old_graph, curr_graph, current_centrality)
+def generate_difference(old_graph, curr_graph):
+    diff_measures = retrieve_difference_graph(old_graph, curr_graph, current_centrality, old_graph_centralities[1])
     node_colors = color_nodes(diff_measures)
     edge_colors = color_edges(road_graph_sum.edges, added_edges, deleted_edges)
     create_map(road_graph_sum, node_colors, edge_colors)
     webbrowser.open('diff_map.html')
     print('Difference graph has been generated')
+
 
 
 def gui():
@@ -119,7 +135,7 @@ def gui():
         3: lambda: delete_edge(road_graph),
         4: handle_centrality_method_switch,
         5: lambda: read_graph_data(filter_string),
-        7: lambda: generate_difference(old_graph, road_graph, current_centrality)
+        7: lambda: generate_difference(old_graph, road_graph)
     }
 
     while True:
