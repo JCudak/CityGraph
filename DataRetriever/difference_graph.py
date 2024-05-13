@@ -3,6 +3,8 @@ from centralities import random_walk_betweenness
 from centralities import centrality_betweenness
 from centralities import page_rank
 from centralities import local_clustering_coefficient
+from centralities import eigenvector
+from centralities import closeness
 
 
 def _compute_centralities(type, old_graph, new_graph, old_measure):
@@ -29,6 +31,17 @@ def _compute_centralities(type, old_graph, new_graph, old_measure):
             if old_measure is None:
                 old_graph_measure = local_clustering_coefficient(old_graph)
             new_graph_measure = local_clustering_coefficient(new_graph)
+
+        case 'Eigenvector Centrality':
+            if old_measure is None:
+                old_graph_measure = eigenvector(old_graph)
+            new_graph_measure = eigenvector(new_graph)
+
+        case 'Closeness Centrality':
+            if old_measure is None:
+                old_graph_measure = closeness(old_graph)
+            new_graph_measure = closeness(new_graph)
+
         case _:
             print('Operation is not supporeted')
 
