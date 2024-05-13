@@ -1,5 +1,5 @@
 import webbrowser
-from centralities import random_walk_betweenness, centrality_betweenness, page_rank, local_clustering_coefficient
+from centralities import random_walk_betweenness, centrality_betweenness, page_rank, local_clustering_coefficient, eigenvector, closeness
 from utils import color_nodes, color_edges, create_map, retrieve_road_graph
 from difference_graph import retrieve_difference_graph
 from copy import deepcopy
@@ -20,8 +20,11 @@ centralities = {
     'Random Walk Betweenness': random_walk_betweenness(road_graph),
     'Centrality Betweenness': centrality_betweenness(road_graph),
     'Page Rank': page_rank(road_graph),
-    'Local Clustering Coefficient': local_clustering_coefficient(road_graph)
+    'Local Clustering Coefficient': local_clustering_coefficient(road_graph),
+    'Closeness Centrality': closeness(road_graph),
+    'Eigenvector Centrality': eigenvector(road_graph)
 }
+
 current_centrality = 'Centrality Betweenness'
 
 
@@ -48,13 +51,17 @@ def handle_centrality_method_switch():
           "2 - Centrality Betweenness\n"
           "3 - Page Rank\n"
           "4 - Local Clustering Coefficient\n"
+          "5 - Eigenvector Centrality\n"
+          "6 - Closeness Centrality\n"
           "5 - Back")
     choice = get_number("Choose a centrality measure: ")
     centrality_options = {
         1: 'Random Walk Betweenness',
         2: 'Centrality Betweenness',
         3: 'Page Rank',
-        4: 'Local Clustering Coefficient'
+        4: 'Local Clustering Coefficient',
+        5: 'Eigenvector Centrality',
+        6: 'Closeness Centrality'
     }
     selected = centrality_options.get(choice)
     if selected:
@@ -87,7 +94,7 @@ def display_graph(road_graph):
     global old_graph_centralities
     computed_centralities = centralities[current_centrality]
 
-    if old_graph_centralities == (): 
+    if old_graph_centralities == () or old_graph_centralities[0] != current_centrality: 
         old_graph_centralities = (current_centrality, computed_centralities)
 
     node_colors = color_nodes(centralities[current_centrality])
@@ -113,7 +120,9 @@ def read_graph_data(custom_filter):
             'Random Walk Betweenness': random_walk_betweenness(road_graph),
             'Centrality Betweenness': centrality_betweenness(road_graph),
             'Page Rank': page_rank(road_graph),
-            'Local Clustering Coefficient': local_clustering_coefficient(road_graph)
+            'Local Clustering Coefficient': local_clustering_coefficient(road_graph),
+            'Closeness Centrality': closeness(road_graph),
+            'Eigenvector Centrality': eigenvector(road_graph)
         }
         print("Graph data has been updated and centralities recalculated.")
 

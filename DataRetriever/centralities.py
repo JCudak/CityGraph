@@ -19,3 +19,13 @@ def page_rank(roads_graph):
 def local_clustering_coefficient(roads_graph):
     G2 = nx.DiGraph(roads_graph)
     return nx.clustering(G=G2.to_undirected(), weight='weight')
+
+
+def eigenvector(roads_graph):
+    G2 = nx.DiGraph(roads_graph)
+    return nx.eigenvector_centrality_numpy(G=G2, weight='weight')
+
+
+def closeness(roads_graph):
+    return nx.closeness_centrality(G=roads_graph, distance='weight')
+
