@@ -4,9 +4,9 @@ from utils import color_nodes, color_edges, create_map, retrieve_road_graph
 from difference_graph import retrieve_difference_graph
 from copy import deepcopy
 
-initial_place = "Kurdwanów, Podgórze, Krakow, Lesser Poland, Poland"
+initial_place = "Krakow, Lesser Poland, Poland"
 filter_string = ('["highway"~"motorway|trunk|primary|secondary|tertiary|road|residential|motorway_link|trunk_link|'
-                 'primary_link|secondary_link|tertiary|link|living_street|unclassified|service"]["access"!="no"]')
+                 'primary_link|secondary_link|tertiary|link|living_street|unclassified"]["access"!="no"]')
 
 old_graph = retrieve_road_graph(initial_place, filter_string)
 road_graph = deepcopy(old_graph) 
