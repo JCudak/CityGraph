@@ -1,12 +1,13 @@
 import webbrowser
 from centralities import random_walk_betweenness, centrality_betweenness, page_rank, local_clustering_coefficient, eigenvector, closeness
-from utils import color_nodes, color_edges, create_map, retrieve_road_graph
+from utils import color_nodes, color_nodes_by_difference, color_edges, create_map, retrieve_road_graph
 from difference_graph import retrieve_difference_graph
 from copy import deepcopy
 
-initial_place = "Kurdwanów, Podgórze, Krakow, Lesser Poland, Poland"
+initial_place = "Krakow, Poland"
+#initial_place = "Kurdwanów, Podgórze, Krakow, Lesser Poland, Poland"
 filter_string = ('["highway"~"motorway|trunk|primary|secondary|tertiary|road|residential|motorway_link|trunk_link|'
-                 'primary_link|secondary_link|tertiary|link|living_street|unclassified|service"]["access"!="no"]')
+                 'primary_link|secondary_link|tertiary|link|living_street|unclassified"]["access"!="no"]')
 
 old_graph = retrieve_road_graph(initial_place, filter_string)
 road_graph = deepcopy(old_graph) 
@@ -98,7 +99,7 @@ def display_graph(road_graph):
         old_graph_centralities = (current_centrality, computed_centralities)
 
     node_colors = color_nodes(centralities[current_centrality])
-    create_map(road_graph, node_colors)
+    create_map(road_graph, node_colors, None, dict(computed_centralities))
     webbrowser.open('map.html')
 
 
@@ -129,9 +130,9 @@ def read_graph_data(custom_filter):
 
 def generate_difference(old_graph, curr_graph):
     diff_measures = retrieve_difference_graph(old_graph, curr_graph, current_centrality, old_graph_centralities[1])
-    node_colors = color_nodes(diff_measures)
+    node_colors = color_nodes_by_difference(diff_measures)
     edge_colors = color_edges(road_graph_sum.edges, added_edges, deleted_edges)
-    create_map(road_graph_sum, node_colors, edge_colors)
+    create_map(road_graph_sum, node_colors, edge_colors, None, dict(diff_measures))
     webbrowser.open('diff_map.html')
     print('Difference graph has been generated')
 

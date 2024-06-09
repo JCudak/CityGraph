@@ -1,5 +1,6 @@
 import matplotlib.colors as mcolors
 import matplotlib.cm as cm
+import numpy as np
 import osmnx as ox
 from folium import IFrame, PolyLine, CircleMarker, Popup, Tooltip, Map
 import simple
@@ -13,22 +14,53 @@ def retrieve_road_graph(place_name: str, custom_filter: str):
     return road_graph
 
 
+def color_nodes_by_difference(c_measures):
+    c_measures = dict(c_measures)
+    
+    colors = [(1, 1, 0), (1, 0, 0)]  # GREEN, YELLOW, RED
+    
+    min_betweenness = min(c_measures.values())
+    max_betweenness = max(c_measures.values())
+
+    norm = mcolors.Normalize(vmin=min_betweenness, vmax =max_betweenness)
+
+    if min_betweenness < 0:
+        colors = [(0, 1, 0), (1, 1, 0), (1, 0, 0)]  # GREEN, YELLOW, RED
+        norm = mcolors.TwoSlopeNorm(vmin=min_betweenness, vcenter=0, vmax=max(max_betweenness, 0.00001))
+
+    cmap = mcolors.LinearSegmentedColormap.from_list('custom', colors)
+    cmap_scaled = cm.ScalarMappable(norm=norm, cmap=cmap)
+
+    node_colors = {node_id: mcolors.to_hex(cmap_scaled.to_rgba(betweenness_value))
+                   for node_id, betweenness_value in c_measures.items()}
+    return node_colors
+
+
 def color_nodes(c_measures):
     c_measures = dict(c_measures)
-    c_measures = {node_id: math.log(betweenness_value + 1)  # 1 to avoid log(0)
+    c_measures = {node_id: math.log(betweenness_value + 100)  # to avoid log(0)
                   for node_id, betweenness_value in c_measures.items()}
+    
+    values = np.array(list(c_measures.values()))
+    avg = np.mean(values)
+    std = np.std(values)
+    
+    lower_bound = avg - std
+    upper_bound = avg + std
+    clamped_values = {node_id: min(max(betweenness_value, lower_bound), upper_bound)
+                      for node_id, betweenness_value in c_measures.items()}
 
     colors = [(0, 1, 0), (1, 1, 0), (1, 0, 0)]  # GREEN, YELLOW, RED
     cmap = mcolors.LinearSegmentedColormap.from_list('custom', colors)
 
-    min_betweenness = min(c_measures.values())
-    max_betweenness = max(c_measures.values())
+    min_betweenness = min(clamped_values.values())
+    max_betweenness = max(clamped_values.values())
 
     norm = mcolors.Normalize(vmin=min_betweenness, vmax=max_betweenness)
     cmap_scaled = cm.ScalarMappable(norm=norm, cmap=cmap)
 
     node_colors = {node_id: mcolors.to_hex(cmap_scaled.to_rgba(betweenness_value))
-                   for node_id, betweenness_value in c_measures.items()}
+                   for node_id, betweenness_value in clamped_values.items()}
 
     return node_colors
 
@@ -46,7 +78,7 @@ def color_edges(total_e, added_e, deleted_e):
     return colored_edges
 
 
-def create_map(road_graph, node_colors=None, edge_colors=None):
+def create_map(road_graph, node_colors=None, edge_colors=None, centrality_measures=None, difference_measures=None):
     nodes, edges = ox.graph_to_gdfs(road_graph, nodes=True, edges=True)
     folium_map = Map(location=[nodes['y'].mean(), nodes['x'].mean()], zoom_start=15, tiles='cartodbpositron')
 
@@ -57,9 +89,15 @@ def create_map(road_graph, node_colors=None, edge_colors=None):
     with open('popups/copy_to_clipboard.js', 'r') as f:
         js = f.read()
 
-    def create_popup(item_id, item_type, height=100):
+    def create_popup(item_id, item_type, height=100, centrality_measure=None, difference_measure=None):
         popup_content = html_template.replace('{{item_info}}', f"{item_id}")
         popup_content = popup_content.replace('{{info_name}}', f"{item_type} ID")
+
+        if centrality_measure is not None:
+            popup_content += f"<p>Centrality Value: {centrality_measure}</p>"
+
+        if difference_measure is not None:
+            popup_content += f"<p>Difference Value: {difference_measure}</p>"
 
         iframe_html = f"<style>{css}</style><script>{js}</script>{popup_content}"
         return Popup(IFrame(html=iframe_html, width=180, height=height), parse_html=True)
@@ -88,7 +126,13 @@ def create_map(road_graph, node_colors=None, edge_colors=None):
             color=color,
             fill=True,
             tooltip=Tooltip(f'Node ID: {node_id}'),
-            popup=create_popup(node_id, 'Node', road_graph)
+            popup=create_popup(
+                    node_id, 
+                    'Node', 
+                    road_graph,
+                    centrality_measure=centrality_measures[node_id] if centrality_measures is not None else None,
+                    difference_measure=difference_measures[node_id] if difference_measures is not None else None
+            )
         ).add_to(folium_map)
 
     folium_map.save('map.html') if edge_colors is None else folium_map.save('diff_map.html')
