@@ -1,6 +1,6 @@
 # Detection of Sensitive Parts of the Road Network Based on Graph Centrality Measures
 <p align="center">
-  <img src="https://github.com/kifur2/CityGraph/blob/main/DataRetriever/img/main.jpg" width="75%">
+  <img src="https://github.com/kifur2/CityGraph/blob/main/img/main.jpg" width="75%">
 </p>
 
 
@@ -31,13 +31,13 @@ filter_string = (
 However, the graph obtained using this method is overly complex, containing many unnecessary nodes, particularly in roundabouts.
 
 <p align="center">
-  <img src="https://github.com/kifur2/CityGraph/blob/main/DataRetriever/img/dataset_1.png" width="75%">
+  <img src="https://github.com/kifur2/CityGraph/blob/main/img/dataset_1.png" width="75%">
 </p>
 
 The excess nodes significantly increase the computing power required to calculate centralities. Therefore, we needed to simplify the graph. Our approach involved merging vertices with only two neighboring nodes and combining the edges of the consecutive merged nodes.
 
 <p align="center">
-  <img src="https://github.com/kifur2/CityGraph/blob/main/DataRetriever/img/dataset_2.png" width="75%">
+  <img src="https://github.com/kifur2/CityGraph/blob/main/img/dataset_2.png" width="75%">
 </p>
 
 This operation made the retrieved graph nearly ready for analysis using centrality measures. However, each road can be of a different type, ranging from primary or secondary roads to tracks or service roads. Therefore, we need to assign appropriate "weight" values to these roads to account for their varying importance and characteristics. To achieve this, we classify the roads based on their type and assign a weight value accordingly. 
@@ -70,7 +70,7 @@ Shows which nodes are important based on the shortest paths between two nodes. T
 In the whole map overview there are most of the low (green) values. 
 
 <p align="center">
-  <img src="https://github.com/kifur2/CityGraph/blob/main/DataRetriever/img/betweeneess_1.png" width="75%">
+  <img src="https://github.com/kifur2/CityGraph/blob/main/img/betweeneess_1.png" width="75%">
 </p>
 
 It is noticeable one almost connected circular lane.They are mostly primary or secondary roads. As road wiki says they link smaller and bigger cities. Krakow does not have the ring road so many trucks must go through them. In addition, the Debnicki Bridge with one of the biggest centrality values connects many of the shortest paths for two reasons, one: it is the primary road, and two: it is close to the Old Town and center of the city.
@@ -79,7 +79,7 @@ It is noticeable one almost connected circular lane.They are mostly primary or s
 Closeness centrality measures how close a node is to all other nodes in a network, based on the average shortest path length from the node to all other nodes. Nodes with high closeness centrality are more in centrum, and can easily interact with all other nodes.
 
 <p align="center">
-  <img src="https://github.com/kifur2/CityGraph/blob/main/DataRetriever/img/closesness_1.png" width="75%">
+  <img src="https://github.com/kifur2/CityGraph/blob/main/img/closesness_1.png" width="75%">
 </p>
 
 It is observable that the highest values again are through the biggest roads in the city. This time it means that they are in the center and it is easy to connect with all other places.
@@ -90,7 +90,7 @@ There are some suspiciously green points, after analysis of roads, it has  occur
 It is similar to closeness centrality but shows how often nodes are visited during random walks by graph. A high value can indicate that a node is easily reachable, meaning numerous paths traverse through it, and it is not positioned at the network's periphery.
 
 <p align="center">
-  <img src="https://github.com/kifur2/CityGraph/blob/main/DataRetriever/img/random_walk.png" width="75%">
+  <img src="https://github.com/kifur2/CityGraph/blob/main/img/random_walk.png" width="75%">
 </p>
 
 The highest random walk betweenness is in the south-east of the city, where there is a motorway. A motorway has the lowest weight so most random walks go through it. There is a piece of the missing road it can be caused by the missing data or mislabelled and that is why filters have deleted it. It can have an impact on the interpretation.
@@ -205,7 +205,7 @@ def _compute_difference(old_measure, new_measure):
 After computing the centralities, we calculate the differences between the centrality measures of old_graph and road_graph which is done with the _compute_difference function by subtracting the old_graph centrality values from road_graph measures for each node, resulting in a list of differences.
 
 <p align="center">
-  <img src="https://github.com/kifur2/CityGraph/blob/main/DataRetriever/img/difference_graph.png" width="75%">
+  <img src="https://github.com/kifur2/CityGraph/blob/main/img/difference_graph.png" width="75%">
 </p>
 
 The generate_difference function then visualizes these differences. It uses the color_nodes(diff_measures) function which assigns colors to the nodes based on differences, with green indicating improved centrality, red indicating worsened centrality, and yellow indicating minimal or zero change. 
@@ -225,7 +225,7 @@ initial_place = "Krakow, Lesser Poland, Poland"
 We then use the OSMnx library to retrieve the road network graph. After applying the closeness_centrality function to it as a result we get the map of Krakow shown below:
 
 <p align="center">
-  <img src="https://github.com/kifur2/CityGraph/blob/main/DataRetriever/img/krakow_1.png" width="75%">
+  <img src="https://github.com/kifur2/CityGraph/blob/main/img/krakow_1.png" width="75%">
 </p>
 
 
@@ -241,7 +241,7 @@ To understand the impact of this critical edge on the overall network, we simula
 First, we identify the ID of the edge we want to remove. This can be done by clicking on the edge in the visualization tool, which displays the necessary information needed to remove the edge:
 
 <p align="center">
-  <img src="https://github.com/kifur2/CityGraph/blob/main/DataRetriever/img/krakow_2.png" width="50%">
+  <img src="https://github.com/kifur2/CityGraph/blob/main/img/krakow_2.png" width="50%">
 </p>
 
 
@@ -251,7 +251,7 @@ As depicted in the image, there are two roads on the bridge. Therefore, we need 
 
 Next, we compute the differences in closeness centrality between the original and modified graphs. This allows us to visualize how the removal of the edge affects the network:
 <p align="center">
-  <img src="https://github.com/kifur2/CityGraph/blob/main/DataRetriever/img/krakow_3.png" width="75%">
+  <img src="https://github.com/kifur2/CityGraph/blob/main/img/krakow_3.png" width="75%">
 </p>
 
 After removing an edge corresponding to Nowohucki bridge we can observe a slightly better closeness centrality values (marked in green and yellow) in the neighborhood of this bridge. Nodes marked in yellow signify areas where the closeness centrality remained the same.
@@ -271,7 +271,7 @@ We then again retrieve the road network graph of the city and apply to it betwee
 
 
 <p align="center">
-  <img src="https://github.com/kifur2/CityGraph/blob/main/DataRetriever/img/wroclaw_1.png" width="75%">
+  <img src="https://github.com/kifur2/CityGraph/blob/main/img/wroclaw_1.png" width="75%">
 </p>
 
 On the map above we can see how the traffic is distributed throughout the whole city; The nodes marked as red indicate that these crossings are the most important for the network, and so there will probably be bigger traffic intensity compared to nodes marked green or yellow. CBy comparing the graph with the actual traffic behavior, we can observe many similarities, so we can say that betweeness_centrality properly shows how the road flow of the Wroclaw is generated. 
@@ -281,7 +281,7 @@ On the map above we can see how the traffic is distributed throughout the whole 
 After the removal of the Krakowsa street, we can see below the part of the graph that got affected because of that change.
 
 <p align="center">
-  <img src="https://github.com/kifur2/CityGraph/blob/main/DataRetriever/img/wroclaw_2.png" width="75%">
+  <img src="https://github.com/kifur2/CityGraph/blob/main/img/wroclaw_2.png" width="75%">
 </p>
 
 The most significant positive impact is seen near the deleted edges, where some neighboring nodes have experienced a reduction in traffic. However, this change has also negatively affected other parts of the graph. The traffic that previously traveled through Krakowska Street has been redirected through other nodes, increasing their load.
